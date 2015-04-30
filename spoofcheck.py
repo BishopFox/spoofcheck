@@ -11,16 +11,43 @@ from libs.PrettyOutput import output_good, output_bad, \
     output_info, output_error, output_indifferent
 
 
+def check_spf_redirect_mechanisms(spf_record):
+    redirect_domain = spf_record.get_redirect_domain()
+
+    if redirect_domain is not None:
+        output_info("Processing an SPF redirect domain: %s" % redirect_domain)
+
+        return is_spf_record_strong(redirect_domain)
+
+    else:
+        return False
+
+
+def check_spf_include_mechanisms(spf_record):
+    include_domain_list = spf_record.get_include_domains()
+
+    for include_domain in include_domain_list:
+        output_info("Processing an SPF include domain: %s" % include_domain)
+
+        strong_all_string = is_spf_record_strong(include_domain)
+
+        if strong_all_string:
+            return True
+
+    return False
+
+
 def check_spf_all_string(spf_record):
-    strong_spf_all_string = False
+    strong_spf_all_string = True
     if spf_record.all_string is not None:
         if spf_record.all_string == "~all" or spf_record.all_string == "-all":
             output_indifferent("SPF record contains an All item: " + spf_record.all_string)
         else:
             output_good("SPF record All item is too weak: " + spf_record.all_string)
-            strong_spf_all_string = True
+            strong_spf_all_string = False
     else:
         output_good("SPF record has no All string")
+        strong_spf_all_string = False
 
     return strong_spf_all_string
 
@@ -32,9 +59,19 @@ def is_spf_record_strong(domain):
         output_info("Found SPF record:")
         output_info(str(spf_record.record))
 
-        all_string_weak = check_spf_all_string(spf_record)
-        if all_string_weak is True:
+        strong_all_string = check_spf_all_string(spf_record)
+        if strong_all_string is False:
+
+            redirect_strength = check_spf_redirect_mechanisms(spf_record)
+            include_strength = check_spf_include_mechanisms(spf_record)
+
             strong_spf_record = False
+
+            if redirect_strength is True:
+                strong_spf_record = True
+
+            if include_strength is True:
+                strong_spf_record = True
 
     except spflib.NoSpfRecordException:
         output_good(domain + " has no SPF record!")
@@ -81,14 +118,17 @@ def is_dmarc_record_strong(domain):
     try:
         dmarc = get_dmarc_record(domain)
 
-        dmarc_record_strong = check_dmarc_policy(dmarc)
+        if dmarc is not None:
 
-        check_dmarc_extras(dmarc)
+            dmarc_record_strong = check_dmarc_policy(dmarc)
+
+            check_dmarc_extras(dmarc)
 
     except dmarclib.NoDmarcRecordException:
         output_good(domain + " has no DMARC record!")
 
     return dmarc_record_strong
+
 
 if __name__ == "__main__":
     color_init()
