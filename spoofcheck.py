@@ -54,8 +54,8 @@ def check_spf_all_string(spf_record):
 
 def is_spf_record_strong(domain):
     strong_spf_record = True
-    try:
-        spf_record = spflib.SpfRecord.from_domain(domain)
+    spf_record = spflib.SpfRecord.from_domain(domain)
+    if spf_record is not None:
         output_info("Found SPF record:")
         output_info(str(spf_record.record))
 
@@ -72,19 +72,19 @@ def is_spf_record_strong(domain):
 
             if include_strength is True:
                 strong_spf_record = True
-
-    except spflib.NoSpfRecordException:
-        output_good(domain + " has no SPF record!")
-        strong_spf_record = False
+        else:
+            output_good(domain + " has no SPF record!")
+            strong_spf_record = False
 
     return strong_spf_record
 
 
 def get_dmarc_record(domain):
     dmarc = dmarclib.DmarcRecord.from_domain(domain)
-    output_info("Found DMARC record:")
-    output_info(str(dmarc.record))
-    return dmarc
+    if dmarc is not None:
+        output_info("Found DMARC record:")
+        output_info(str(dmarc.record))
+        return dmarc
 
 
 def check_dmarc_extras(dmarc_record):
@@ -115,16 +115,14 @@ def check_dmarc_policy(dmarc_record):
 def is_dmarc_record_strong(domain):
     dmarc_record_strong = False
 
-    try:
-        dmarc = get_dmarc_record(domain)
+    dmarc = get_dmarc_record(domain)
 
-        if dmarc is not None:
+    if dmarc is not None:
 
-            dmarc_record_strong = check_dmarc_policy(dmarc)
+        dmarc_record_strong = check_dmarc_policy(dmarc)
 
-            check_dmarc_extras(dmarc)
-
-    except dmarclib.NoDmarcRecordException:
+        check_dmarc_extras(dmarc)
+    else:
         output_good(domain + " has no DMARC record!")
 
     return dmarc_record_strong
