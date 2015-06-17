@@ -72,9 +72,9 @@ def is_spf_record_strong(domain):
 
             if include_strength is True:
                 strong_spf_record = True
-        else:
-            output_good(domain + " has no SPF record!")
-            strong_spf_record = False
+    else:
+        output_good(domain + " has no SPF record!")
+        strong_spf_record = False
 
     return strong_spf_record
 
@@ -142,6 +142,8 @@ if __name__ == "__main__":
         dmarc_record_strength = is_dmarc_record_strong(domain)
         if dmarc_record_strength is False:
             spoofable = True
+        else:
+            spoofable = False
 
         if spoofable:
             output_good("Spoofing possible for " + domain + "!")
