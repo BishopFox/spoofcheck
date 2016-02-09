@@ -6,9 +6,13 @@ from colorama import init as color_init
 
 import emailprotectionslib.dmarc as dmarclib
 import emailprotectionslib.spf as spflib
+import logging
 
 from libs.PrettyOutput import output_good, output_bad, \
     output_info, output_error, output_indifferent
+
+
+logging.basicConfig(level=logging.INFO)
 
 
 def check_spf_redirect_mechanisms(spf_record):
@@ -181,8 +185,6 @@ if __name__ == "__main__":
         domain = sys.argv[1]
 
         spf_record_strength = is_spf_record_strong(domain)
-        if spf_record_strength is False:
-            spoofable = True
 
         dmarc_record_strength = is_dmarc_record_strong(domain)
         if dmarc_record_strength is False:
