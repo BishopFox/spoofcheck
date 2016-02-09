@@ -37,6 +37,39 @@ def check_spf_include_mechanisms(spf_record):
     return False
 
 
+def is_spf_redirect_record_strong(spf_record):
+    output_info("Checking SPF redirect domian: %(domain)s" % {"domain": spf_record.get_redirect_domain})
+    redirect_strong = spf_record._is_redirect_mechanism_strong()
+    if redirect_strong:
+        output_bad("Redirect mechanism is strong.")
+    else:
+        output_indifferent("Redirect mechanism is not strong.")
+
+    return redirect_strong
+
+
+def are_spf_include_mechanisms_strong(spf_record):
+    output_info("Checking SPF include mechanisms")
+    include_strong = spf_record._are_include_mechanisms_strong()
+    if include_strong:
+        output_bad("Include mechanisms include a strong record")
+    else:
+        output_indifferent("Include mechanisms are not strong")
+
+    return include_strong
+
+
+def check_spf_include_redirect(spf_record):
+    other_records_strong = False
+    if spf_record.get_redirect_domain() is not None:
+        other_records_strong = is_spf_redirect_record_strong(spf_record)
+
+    if not other_records_strong:
+        other_records_strong = are_spf_include_mechanisms_strong(spf_record)
+
+    return other_records_strong
+
+
 def check_spf_all_string(spf_record):
     strong_spf_all_string = True
     if spf_record.all_string is not None:
@@ -49,13 +82,16 @@ def check_spf_all_string(spf_record):
         output_good("SPF record has no All string")
         strong_spf_all_string = False
 
+    if not strong_spf_all_string:
+        strong_spf_all_string = check_spf_include_redirect(spf_record)
+
     return strong_spf_all_string
 
 
 def is_spf_record_strong(domain):
     strong_spf_record = True
     spf_record = spflib.SpfRecord.from_domain(domain)
-    if spf_record is not None:
+    if spf_record is not None and spf_record.record is not None:
         output_info("Found SPF record:")
         output_info(str(spf_record.record))
 
@@ -81,10 +117,19 @@ def is_spf_record_strong(domain):
 
 def get_dmarc_record(domain):
     dmarc = dmarclib.DmarcRecord.from_domain(domain)
-    if dmarc is not None:
+    if dmarc is not None and dmarc.record is not None:
         output_info("Found DMARC record:")
         output_info(str(dmarc.record))
         return dmarc
+    else:
+        org_domain = dmarc.get_org_domain()
+        if org_domain is not None:
+            output_info("Record is a subdomain of %(org)s" % {"org": org_domain})
+            org_record = dmarclib.DmarcRecord.from_domain(org_domain)
+            if org_record.record is not None:
+                output_info("Found subdomain DMARC record for %(org)s:" % {"org": org_domain})
+                output_info(str(org_record.record))
+                return org_record
 
 
 def check_dmarc_extras(dmarc_record):
