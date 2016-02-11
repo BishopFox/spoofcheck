@@ -127,7 +127,7 @@ def get_dmarc_record(domain):
         return dmarc
     else:
         org_domain = dmarc.get_org_domain()
-        if org_domain is not None:
+        if org_domain is not None and org_domain != domain:
             output_info("Record is a subdomain of %(org)s" % {"org": org_domain})
             org_record = dmarclib.DmarcRecord.from_domain(org_domain)
             if org_record.record is not None:
