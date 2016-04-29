@@ -124,16 +124,15 @@ def get_dmarc_record(domain):
     if dmarc is not None and dmarc.record is not None:
         output_info("Found DMARC record:")
         output_info(str(dmarc.record))
-        return dmarc
-    else:
-        org_domain = dmarc.get_org_domain()
-        if org_domain is not None and org_domain != domain:
-            output_info("Record is a subdomain of %(org)s" % {"org": org_domain})
-            org_record = dmarclib.DmarcRecord.from_domain(org_domain)
-            if org_record.record is not None:
-                output_info("Found subdomain DMARC record for %(org)s:" % {"org": org_domain})
-                output_info(str(org_record.record))
-                return org_record
+    return dmarc
+
+
+def get_dmarc_org_record(base_record):
+    org_record = base_record.get_org_record()
+    if org_record is not None:
+        output_info("Found DMARC Organizational record:")
+        output_info(str(org_record.record))
+    return org_record
 
 
 def check_dmarc_extras(dmarc_record):
@@ -161,16 +160,45 @@ def check_dmarc_policy(dmarc_record):
     return policy_strength
 
 
+def check_dmarc_org_policy(base_record):
+    policy_strong = False
+
+    try:
+        org_record = base_record.get_org_record()
+        if org_record is not None and org_record.record is not None:
+            output_info("Found organizational DMARC record:")
+            output_info(str(org_record.record))
+
+            if org_record.subdomain_policy is not None:
+                if org_record.subdomain_policy == "none":
+                    output_good("Organizational subdomain policy set to %(sp)s" % {"sp": org_record.subdomain_policy})
+                elif org_record.subdomain_policy == "quarantine" or org_record.subdomain_policy == "reject":
+                    output_bad("Organizational subdomain policy explicitly set to %(sp)s" % {"sp": org_record.subdomain_policy})
+                    policy_strong = True
+            else:
+                output_info("No explicit organizational subdomain policy. Defaulting to organizational policy")
+                policy_strong = check_dmarc_policy(org_record)
+        else:
+            output_good("No organizational DMARC record")
+
+    except Exception as e:
+        logging.exception(e)
+
+    return policy_strong
+
+
 def is_dmarc_record_strong(domain):
     dmarc_record_strong = False
 
     dmarc = get_dmarc_record(domain)
 
-    if dmarc is not None:
-
+    if dmarc is not None and dmarc.record is not None:
         dmarc_record_strong = check_dmarc_policy(dmarc)
 
         check_dmarc_extras(dmarc)
+    elif dmarc.get_org_domain() is not None:
+        output_info("No DMARC record found. Looking for organizational record")
+        dmarc_record_strong = check_dmarc_org_policy(dmarc)
     else:
         output_good(domain + " has no DMARC record!")
 
