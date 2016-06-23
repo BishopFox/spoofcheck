@@ -181,6 +181,9 @@ def check_dmarc_org_policy(base_record):
         else:
             output_good("No organizational DMARC record")
 
+    except dmarclib.OrgDomainException:
+        output_good("No organizational DMARC record")
+
     except Exception as e:
         logging.exception(e)
 
