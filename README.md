@@ -18,6 +18,7 @@ Domains are spoofable if any of the following conditions are met:
 - `dnspython`
 - `colorama`
 - `emailprotectionslib`
+- `tldextract`
 
 ## Setup
 
