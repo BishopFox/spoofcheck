@@ -22,7 +22,9 @@ Domains are spoofable if any of the following conditions are met:
 
 ## Setup
 
-Run `pip install -r requirements.txt` from the command line to install the required dependencies.
+1. Ensure you have `pipenv` installed: `pip install pipenv`.
+2. Run `pipenv install` from the command line to install the required dependencies.
+3. Run the program using `pipenv run ./spoofcheck.py`
 
 ## Coming Soon
 - Standalone Windows executable
