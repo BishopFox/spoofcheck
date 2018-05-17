@@ -7,6 +7,7 @@ from colorama import init as color_init
 import emailprotectionslib.dmarc as dmarclib
 import emailprotectionslib.spf as spflib
 import logging
+import argparse
 
 from libs.PrettyOutput import output_good, output_bad, \
     output_info, output_error, output_indifferent
@@ -207,26 +208,41 @@ def is_dmarc_record_strong(domain):
 
     return dmarc_record_strong
 
-
-if __name__ == "__main__":
+def single_domain(domain):
     color_init()
     spoofable = False
 
-    try:
-        domain = sys.argv[1]
+    spf_record_strength = is_spf_record_strong(domain)
 
-        spf_record_strength = is_spf_record_strong(domain)
+    dmarc_record_strength = is_dmarc_record_strong(domain)
+    if dmarc_record_strength is False:
+        spoofable = True
+    else:
+        spoofable = False
 
-        dmarc_record_strength = is_dmarc_record_strong(domain)
-        if dmarc_record_strength is False:
-            spoofable = True
-        else:
-            spoofable = False
+    if spoofable:
+        output_good("Spoofing possible for " + domain + "!")
+    else:
+        output_bad("Spoofing not possible for " + domain)
 
-        if spoofable:
-            output_good("Spoofing possible for " + domain + "!")
-        else:
-            output_bad("Spoofing not possible for " + domain)
 
-    except IndexError:
-        output_error("Usage: " + sys.argv[0] + " [DOMAIN]")
+def menu():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input", "-i", help="List of domains to perform checking")
+    parser.add_argument("--domain", "-d", help="Single domain to perform checking")
+    args = parser.parse_args()
+
+    if args.domain:
+        single_domain(args.domain.rstrip())
+    elif args.input:
+        with open(args.input, 'r') as f:
+            for domain in f:
+                domain = domain.rstrip()
+                output_info("Checking " + domain)
+                single_domain(domain)
+                print("")
+    else:
+        parser.print_help()
+
+if __name__ == "__main__":
+    menu()
