@@ -227,4 +227,4 @@ if __name__ == "__main__":
             output_bad("Spoofing not possible for " + domain)
 
     except IndexError:
-        output_error("Usage: " + sys.argv[0] + " [DOMAIN]")
+        output_error("Usage: spoofcheck [DOMAIN]")
