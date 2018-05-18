@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 import sys
 
 from colorama import init as color_init
