@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+colorama = "*"
+emailprotectionslib = ">=0.8.2"
+dnslib = "*"
+tldextract = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "2.7"
