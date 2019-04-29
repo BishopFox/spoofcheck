@@ -42,7 +42,7 @@ def check_spf_include_mechanisms(spf_record):
 
 
 def is_spf_redirect_record_strong(spf_record):
-    output_info("Checking SPF redirect domian: %(domain)s" % {"domain": spf_record.get_redirect_domain})
+    output_info("Checking SPF redirect domain: %(domain)s" % {"domain": spf_record.get_redirect_domain})
     redirect_strong = spf_record._is_redirect_mechanism_strong()
     if redirect_strong:
         output_bad("Redirect mechanism is strong.")
