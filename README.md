@@ -1,12 +1,21 @@
 # spoofcheck
 
+**Forked from https://github.com/BishopFox/spoofcheck**
+
+## Differences from original
+- code refactoring
+- port to python3
+- Dockerfile
+
+## About
+
 A program that checks if a domain can be spoofed from. The program checks SPF and DMARC records for weak configurations that allow spoofing. 
 
 Additionally it will alert if the domain has DMARC configuration that sends mail or HTTP requests on failed SPF/DKIM emails.
 
 Usage:
 
-	./spoofcheck.py [DOMAIN]
+`./spoofcheck.py [DOMAIN]`
 
 Domains are spoofable if any of the following conditions are met:
 - Lack of an SPF or DMARC record
@@ -17,14 +26,20 @@ Domains are spoofable if any of the following conditions are met:
 ## Dependencies
 - `dnspython`
 - `colorama`
-- `emailprotectionslib`
+- `py-emailprotection`
 - `tldextract`
 
 ## Setup
 
 Run `pip install -r requirements.txt` from the command line to install the required dependencies.
 
-## Coming Soon
-- Standalone Windows executable
-- Basic GUI option
-- Tests
+## Docker setup
+
+```
+docker build -t spoofcheck .
+docker run -it --rm spoofcheck [domain]
+```
+
+## Thanks
+
+https://github.com/BishopFox
