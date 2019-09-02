@@ -14,4 +14,4 @@ def output_bad(line):
     print(Fore.RED + Style.BRIGHT + "[-]" + Style.RESET_ALL, line)
 
 def output_info(line):
-    print(Fore.WHITE + Style.BRIGHT + "[*]" + Style.RESET_ALL, line)
+    print(Fore.CYAN + Style.BRIGHT + "[*]" + Style.RESET_ALL, line)
