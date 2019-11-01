@@ -213,20 +213,30 @@ if __name__ == "__main__":
     spoofable = False
 
     try:
-        domain = sys.argv[1]
+        scope = sys.argv[1]
+        hosts = open(scope).readlines()
+        hosts_spoofable = []
+        for host in hosts:
+            domain = host.strip()
+            spf_record_strength = is_spf_record_strong(domain)
 
-        spf_record_strength = is_spf_record_strong(domain)
+            dmarc_record_strength = is_dmarc_record_strong(domain)
+            if dmarc_record_strength is False:
+                spoofable = True
+            else:
+                spoofable = False
 
-        dmarc_record_strength = is_dmarc_record_strong(domain)
-        if dmarc_record_strength is False:
-            spoofable = True
+            if spoofable:
+                output_good("Spoofing possible for " + domain + "!")
+                hosts_spoofable.append(domain)
+            else:
+                output_bad("Spoofing not possible for " + domain)
+            output_good("\n")
+        if len(hosts_spoofable) > 0:
+            output_good("Spoofing possible for the following domains:\n")
+            for line in hosts_spoofable:
+                output_good(line)
         else:
-            spoofable = False
-
-        if spoofable:
-            output_good("Spoofing possible for " + domain + "!")
-        else:
-            output_bad("Spoofing not possible for " + domain)
-
+            output_bad("Spoofing not possible for any of the domains.")
     except IndexError:
-        output_error("Usage: " + sys.argv[0] + " [DOMAIN]")
+        output_error("Usage: " + sys.argv[0] + " [SCOPE_FILE]")
